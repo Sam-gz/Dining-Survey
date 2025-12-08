@@ -144,21 +144,39 @@ export const StorageService = {
     if (responses.length === 0) return null;
 
     // Headers
-    const headers = ['ID', 'Date', 'Time', 'Language', ...questions.map(q => q.titleZh)];
+    const headers = ['ID', 'Date', 'Time', 'Language', ...questions.map(q => q.titleZh), 'Extra Comments'];
     
     // Rows
     const rows = responses.map(r => {
         const date = new Date(r.timestamp);
+        
+        // Extract basic answers
+        const questionAnswers = questions.map(q => {
+            let ans = r.answers[q.id];
+            
+            // If it's multiple choice, check if there is an "Other" text associated
+            const otherText = r.answers[`${q.id}_other`];
+            
+            if (Array.isArray(ans)) {
+                let str = ans.join('; ');
+                if (otherText) {
+                    str += ` (Other: ${otherText})`;
+                }
+                return str;
+            }
+            return ans ?? '';
+        });
+
+        // Collect any orphaned "other" comments not mapped above? 
+        // For simplicity, we just appended them to the cell above.
+
         const rowData = [
             r.id,
             date.toLocaleDateString(),
             date.toLocaleTimeString(),
             r.language,
-            ...questions.map(q => {
-                const ans = r.answers[q.id];
-                if (Array.isArray(ans)) return ans.join('; ');
-                return ans ?? '';
-            })
+            ...questionAnswers,
+            '' // Spacer or extra
         ];
         return rowData.map(cell => `"${String(cell).replace(/"/g, '""')}"`).join(',');
     });

@@ -8,11 +8,12 @@ import {
     Settings, 
     Download, 
     LogOut, 
-    MessageSquare, 
     BarChart3, 
     Edit,
     Save,
-    Sparkles
+    Sparkles,
+    Menu,
+    X
 } from 'lucide-react';
 
 type Tab = 'overview' | 'responses' | 'settings' | 'editor';
@@ -23,6 +24,9 @@ const AdminDashboardPage: React.FC = () => {
   const [responses, setResponses] = useState<SurveyResponse[]>([]);
   const [questions, setQuestions] = useState<Question[]>([]);
   const [settings, setSettings] = useState<AppSettings | null>(null);
+  
+  // Mobile Sidebar State
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   
   // AI Analysis State
   const [analysis, setAnalysis] = useState<{ summary: string; sentiment: string; tags: TagCloudItem[] } | null>(null);
@@ -95,20 +99,43 @@ const AdminDashboardPage: React.FC = () => {
 
   const stats = getStats();
 
+  const closeSidebar = () => setIsSidebarOpen(false);
+
   if (!settings) return null;
 
   return (
-    <div className="min-h-screen bg-gray-100 flex">
-      {/* Sidebar */}
-      <div className="w-64 bg-slate-900 text-white flex flex-col fixed h-full">
-        <div className="p-6 border-b border-slate-800">
+    <div className="min-h-screen bg-gray-100 flex flex-col md:flex-row">
+      
+      {/* Mobile Header */}
+      <div className="md:hidden bg-slate-900 text-white p-4 flex justify-between items-center z-50 sticky top-0">
+          <div className="font-bold tracking-wider">NB ADMIN</div>
+          <button onClick={() => setIsSidebarOpen(!isSidebarOpen)}>
+              {isSidebarOpen ? <X size={24} /> : <Menu size={24} />}
+          </button>
+      </div>
+
+      {/* Sidebar Overlay for Mobile */}
+      {isSidebarOpen && (
+          <div 
+            className="fixed inset-0 bg-black/50 z-40 md:hidden"
+            onClick={closeSidebar}
+          />
+      )}
+
+      {/* Sidebar Navigation */}
+      <div className={`
+        fixed inset-y-0 left-0 w-64 bg-slate-900 text-white flex flex-col z-50 transition-transform duration-300 transform 
+        ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'}
+        md:translate-x-0 md:static md:h-screen md:sticky md:top-0
+      `}>
+        <div className="p-6 border-b border-slate-800 hidden md:block">
           <h1 className="text-xl font-bold tracking-wider">NB ADMIN</h1>
           <p className="text-xs text-slate-400 mt-1">Satisfaction Survey</p>
         </div>
         
-        <nav className="flex-1 p-4 space-y-2">
+        <nav className="flex-1 p-4 space-y-2 overflow-y-auto">
           <button 
-            onClick={() => setActiveTab('overview')}
+            onClick={() => { setActiveTab('overview'); closeSidebar(); }}
             className={`w-full flex items-center space-x-3 px-4 py-3 rounded-xl transition-colors ${activeTab === 'overview' ? 'bg-indigo-600 text-white' : 'text-slate-400 hover:bg-slate-800'}`}
           >
             <LayoutDashboard size={20} />
@@ -116,7 +143,7 @@ const AdminDashboardPage: React.FC = () => {
           </button>
           
           <button 
-            onClick={() => setActiveTab('responses')}
+            onClick={() => { setActiveTab('responses'); closeSidebar(); }}
             className={`w-full flex items-center space-x-3 px-4 py-3 rounded-xl transition-colors ${activeTab === 'responses' ? 'bg-indigo-600 text-white' : 'text-slate-400 hover:bg-slate-800'}`}
           >
             <BarChart3 size={20} />
@@ -124,7 +151,7 @@ const AdminDashboardPage: React.FC = () => {
           </button>
 
           <button 
-            onClick={() => setActiveTab('settings')}
+            onClick={() => { setActiveTab('settings'); closeSidebar(); }}
             className={`w-full flex items-center space-x-3 px-4 py-3 rounded-xl transition-colors ${activeTab === 'settings' ? 'bg-indigo-600 text-white' : 'text-slate-400 hover:bg-slate-800'}`}
           >
             <Settings size={20} />
@@ -132,7 +159,7 @@ const AdminDashboardPage: React.FC = () => {
           </button>
           
           <button 
-            onClick={() => setActiveTab('editor')}
+            onClick={() => { setActiveTab('editor'); closeSidebar(); }}
             className={`w-full flex items-center space-x-3 px-4 py-3 rounded-xl transition-colors ${activeTab === 'editor' ? 'bg-indigo-600 text-white' : 'text-slate-400 hover:bg-slate-800'}`}
           >
             <Edit size={20} />
@@ -141,7 +168,7 @@ const AdminDashboardPage: React.FC = () => {
         </nav>
 
         <div className="p-4 border-t border-slate-800">
-           <button onClick={handleLogout} className="flex items-center space-x-2 text-slate-400 hover:text-white transition-colors">
+           <button onClick={handleLogout} className="flex items-center space-x-2 text-slate-400 hover:text-white transition-colors w-full px-4 py-2">
              <LogOut size={18} />
              <span>Logout</span>
            </button>
@@ -149,15 +176,15 @@ const AdminDashboardPage: React.FC = () => {
       </div>
 
       {/* Main Content */}
-      <div className="ml-64 flex-1 p-8">
+      <div className="flex-1 p-4 md:p-8 overflow-x-hidden">
         
-        {/* Header */}
-        <div className="flex justify-between items-center mb-8">
+        {/* Page Title & Actions */}
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
             <h2 className="text-2xl font-bold text-gray-800 capitalize">{activeTab}</h2>
             {activeTab === 'responses' && (
                 <button 
                     onClick={downloadCSV}
-                    className="flex items-center space-x-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors shadow-sm"
+                    className="flex items-center space-x-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors shadow-sm text-sm w-full sm:w-auto justify-center"
                 >
                     <Download size={18} />
                     <span>Export CSV</span>
@@ -168,58 +195,58 @@ const AdminDashboardPage: React.FC = () => {
         {/* OVERVIEW TAB */}
         {activeTab === 'overview' && (
             <div className="space-y-6">
-                {/* Stats Cards */}
-                <div className="grid grid-cols-4 gap-6">
-                    <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
-                        <div className="text-gray-400 text-sm font-medium uppercase mb-2">Total Responses</div>
-                        <div className="text-4xl font-bold text-gray-900">{stats.total}</div>
+                {/* Stats Cards - Responsive Grid */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
+                    <div className="bg-white p-5 rounded-2xl shadow-sm border border-gray-100">
+                        <div className="text-gray-400 text-xs font-medium uppercase mb-2">Total Responses</div>
+                        <div className="text-3xl font-bold text-gray-900">{stats.total}</div>
                     </div>
-                    <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
-                        <div className="text-gray-400 text-sm font-medium uppercase mb-2">Today</div>
-                        <div className="text-4xl font-bold text-indigo-600">{stats.today}</div>
+                    <div className="bg-white p-5 rounded-2xl shadow-sm border border-gray-100">
+                        <div className="text-gray-400 text-xs font-medium uppercase mb-2">Today</div>
+                        <div className="text-3xl font-bold text-indigo-600">{stats.today}</div>
                     </div>
-                    <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
-                        <div className="text-gray-400 text-sm font-medium uppercase mb-2">This Week</div>
-                        <div className="text-4xl font-bold text-indigo-600">{stats.week}</div>
+                    <div className="bg-white p-5 rounded-2xl shadow-sm border border-gray-100">
+                        <div className="text-gray-400 text-xs font-medium uppercase mb-2">This Week</div>
+                        <div className="text-3xl font-bold text-indigo-600">{stats.week}</div>
                     </div>
-                    <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
-                        <div className="text-gray-400 text-sm font-medium uppercase mb-2">This Month</div>
-                        <div className="text-4xl font-bold text-indigo-600">{stats.month}</div>
+                    <div className="bg-white p-5 rounded-2xl shadow-sm border border-gray-100">
+                        <div className="text-gray-400 text-xs font-medium uppercase mb-2">This Month</div>
+                        <div className="text-3xl font-bold text-indigo-600">{stats.month}</div>
                     </div>
                 </div>
 
                 {/* AI Analysis Section */}
-                <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-8">
-                    <div className="flex items-center justify-between mb-6">
-                        <h3 className="text-xl font-bold flex items-center gap-2">
+                <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-5 md:p-8">
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+                        <h3 className="text-lg md:text-xl font-bold flex items-center gap-2">
                             <Sparkles className="text-amber-500" />
                             AI Feedback Analysis
                         </h3>
                         <button 
                             onClick={runAnalysis}
                             disabled={analyzing}
-                            className="px-4 py-2 bg-indigo-50 text-indigo-600 rounded-lg hover:bg-indigo-100 font-medium transition-colors"
+                            className="px-4 py-2 bg-indigo-50 text-indigo-600 rounded-lg hover:bg-indigo-100 font-medium transition-colors text-sm w-full sm:w-auto"
                         >
-                            {analyzing ? 'Analyzing...' : 'Generate New Report'}
+                            {analyzing ? 'Analyzing...' : 'Generate Report'}
                         </button>
                     </div>
 
                     {!analysis && !analyzing && (
-                        <div className="text-center py-10 text-gray-400 bg-gray-50 rounded-xl border border-dashed border-gray-200">
-                            Click 'Generate' to analyze open-ended feedback and sentiment using Gemini.
+                        <div className="text-center py-8 text-gray-400 bg-gray-50 rounded-xl border border-dashed border-gray-200 text-sm">
+                            Click 'Generate' to analyze open-ended feedback and sentiment.
                         </div>
                     )}
                     
                     {analysis && (
                         <div className="space-y-6 animate-fade-in">
-                            <div className="bg-indigo-50 p-6 rounded-xl border border-indigo-100">
-                                <h4 className="text-sm font-bold text-indigo-800 uppercase mb-2">Executive Summary</h4>
-                                <p className="text-gray-700 leading-relaxed">{analysis.summary}</p>
+                            <div className="bg-indigo-50 p-5 rounded-xl border border-indigo-100">
+                                <h4 className="text-xs font-bold text-indigo-800 uppercase mb-2">Executive Summary</h4>
+                                <p className="text-gray-700 leading-relaxed text-sm md:text-base">{analysis.summary}</p>
                             </div>
 
-                            <div className="grid grid-cols-2 gap-6">
-                                <div className="p-6 border border-gray-200 rounded-xl">
-                                    <h4 className="text-sm font-bold text-gray-500 uppercase mb-4">Sentiment Score</h4>
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <div className="p-5 border border-gray-200 rounded-xl">
+                                    <h4 className="text-xs font-bold text-gray-500 uppercase mb-4">Sentiment Score</h4>
                                     <div className={`text-2xl font-bold capitalize ${
                                         analysis.sentiment === 'positive' ? 'text-green-600' : 
                                         analysis.sentiment === 'negative' ? 'text-red-600' : 'text-gray-600'
@@ -227,14 +254,14 @@ const AdminDashboardPage: React.FC = () => {
                                         {analysis.sentiment}
                                     </div>
                                 </div>
-                                <div className="p-6 border border-gray-200 rounded-xl">
-                                    <h4 className="text-sm font-bold text-gray-500 uppercase mb-4">Bad Experience Factors (Word Cloud)</h4>
+                                <div className="p-5 border border-gray-200 rounded-xl">
+                                    <h4 className="text-xs font-bold text-gray-500 uppercase mb-4">Bad Experience Factors</h4>
                                     <div className="flex flex-wrap gap-2">
                                         {analysis.tags.map((tag, idx) => (
                                             <span 
                                                 key={idx}
-                                                className="px-3 py-1 bg-gray-100 text-gray-700 rounded-full text-sm"
-                                                style={{ fontSize: `${Math.max(0.8, tag.value / 3)}rem`, opacity: 0.7 + (tag.value/20) }}
+                                                className="px-3 py-1 bg-gray-100 text-gray-700 rounded-full text-xs"
+                                                style={{ fontSize: `${Math.max(0.75, tag.value / 4)}rem`, opacity: 0.7 + (tag.value/20) }}
                                             >
                                                 {tag.text}
                                             </span>
@@ -252,7 +279,7 @@ const AdminDashboardPage: React.FC = () => {
         {activeTab === 'responses' && (
             <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
                 <div className="overflow-x-auto">
-                    <table className="w-full text-left text-sm text-gray-600">
+                    <table className="w-full text-left text-sm text-gray-600 whitespace-nowrap md:whitespace-normal">
                         <thead className="bg-gray-50 border-b border-gray-200">
                             <tr>
                                 <th className="p-4 font-semibold">Time</th>
@@ -286,7 +313,7 @@ const AdminDashboardPage: React.FC = () => {
 
         {/* SETTINGS TAB */}
         {activeTab === 'settings' && (
-            <div className="max-w-2xl bg-white p-8 rounded-2xl shadow-sm border border-gray-100">
+            <div className="max-w-2xl bg-white p-6 md:p-8 rounded-2xl shadow-sm border border-gray-100">
                 <div className="space-y-6">
                     <div>
                         <label className="block text-sm font-medium text-gray-700 mb-2">Restaurant Name</label>
@@ -327,7 +354,7 @@ const AdminDashboardPage: React.FC = () => {
                     <div className="pt-4">
                         <button 
                             onClick={handleSaveSettings}
-                            className="px-6 py-3 bg-indigo-600 text-white font-medium rounded-lg hover:bg-indigo-700 flex items-center space-x-2"
+                            className="w-full md:w-auto px-6 py-3 bg-indigo-600 text-white font-medium rounded-lg hover:bg-indigo-700 flex items-center justify-center space-x-2"
                         >
                             <Save size={18} />
                             <span>Save Changes</span>
@@ -340,18 +367,18 @@ const AdminDashboardPage: React.FC = () => {
         {/* EDITOR TAB */}
         {activeTab === 'editor' && (
             <div className="h-[calc(100vh-140px)] flex flex-col">
-                <div className="bg-amber-50 border border-amber-200 text-amber-800 px-4 py-3 rounded-lg mb-4 text-sm">
-                    Warning: Editing the JSON structure directly can break the survey. Ensure IDs are unique and logic references exist.
+                <div className="bg-amber-50 border border-amber-200 text-amber-800 px-4 py-3 rounded-lg mb-4 text-xs md:text-sm">
+                    Warning: Editing JSON directly is advanced. Ensure ID uniqueness.
                 </div>
                 <textarea 
-                    className="flex-1 w-full p-4 font-mono text-sm bg-slate-50 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none resize-none"
+                    className="flex-1 w-full p-4 font-mono text-xs md:text-sm bg-slate-50 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none resize-none"
                     value={questionsJson}
                     onChange={(e) => setQuestionsJson(e.target.value)}
                 />
                 <div className="mt-4 flex justify-end">
                      <button 
                         onClick={handleSaveQuestions}
-                        className="px-6 py-3 bg-indigo-600 text-white font-medium rounded-lg hover:bg-indigo-700 flex items-center space-x-2"
+                        className="w-full md:w-auto px-6 py-3 bg-indigo-600 text-white font-medium rounded-lg hover:bg-indigo-700 flex items-center justify-center space-x-2"
                     >
                         <Save size={18} />
                         <span>Update Questions</span>
