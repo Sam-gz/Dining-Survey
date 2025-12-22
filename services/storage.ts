@@ -1,3 +1,4 @@
+
 import { Question, QuestionType, AppSettings, SurveyResponse } from '../types';
 
 const STORAGE_KEYS = {
@@ -6,91 +7,96 @@ const STORAGE_KEYS = {
   SETTINGS: 'nb_settings',
 };
 
-// Default Initial Data based on the prompt
+// Default Initial Data based on the "Professional Version" prompt
 const DEFAULT_QUESTIONS: Question[] = [
-  // Section A: 菜品体验
+  // Section A: 后厨出品评价
   { 
     id: 'a1', section: 'A', type: QuestionType.RATING, 
-    titleZh: '菜品整体满意度', titleEn: 'Overall Food Satisfaction', 
+    titleZh: '1. 菜品品质与口味满意度', titleEn: '1. Food Quality & Taste', 
     required: true 
   },
   { 
     id: 'a2', section: 'A', type: QuestionType.RATING, 
-    titleZh: '菜品分量与定价匹配度', titleEn: 'Portion size & Value for money', 
+    titleZh: '2. 菜品份量合理性', titleEn: '2. Portion Size Suitability', 
     required: true 
   },
   { 
-    id: 'a1_sub', section: 'A', type: QuestionType.MULTIPLE_CHOICE, 
-    titleZh: '主要不满意的原因是？', titleEn: 'Main reasons for dissatisfaction?',
-    optionsZh: ['种类少', '口味一般', '分量偏少', '价格略高', '上菜速度慢', '其他（请说明）'],
-    optionsEn: ['Few choices', 'Average taste', 'Small portion', 'Pricey', 'Slow service', 'Other'],
-    // Logic: Show if A1 <= 7 OR A2 <= 7 (Updated from 6)
+    id: 'a3', section: 'A', type: QuestionType.RATING, 
+    titleZh: '3. 出餐效率满意度 (目标：15分钟内开始上餐)', titleEn: '3. Service Speed (Target: within 15 mins)', 
+    required: true 
+  },
+  { 
+    id: 'a_sub', section: 'A', type: QuestionType.MULTIPLE_CHOICE, 
+    titleZh: 'A-1 主要不满意原因？', titleEn: 'A-1 Main reasons for dissatisfaction?',
+    optionsZh: ['口味偏淡 / 偏重', '分量过少', '定价与份量不匹配', '上菜速度慢', '种类不足', '其他（请说明）'],
+    optionsEn: ['Taste issues', 'Small portion', 'Price/Portion mismatch', 'Slow service', 'Not enough variety', 'Other'],
     visibleIf: [
-      { triggerQuestionId: 'a1', operator: '<=', value: 7 },
-      { triggerQuestionId: 'a2', operator: '<=', value: 7 }
-    ]
+      { triggerQuestionId: 'a1', operator: '<=', value: 8 },
+      { triggerQuestionId: 'a2', operator: '<=', value: 8 },
+      { triggerQuestionId: 'a3', operator: '<=', value: 8 }
+    ],
+    required: true
   },
   
-  // Section B: 服务体验
+  // Section B: 前厅服务评价
   { 
     id: 'b1', section: 'B', type: QuestionType.RATING, 
-    titleZh: '服务满意度（态度 / 速度）', titleEn: 'Service Satisfaction (Attitude/Speed)', 
+    titleZh: '4. 服务满意度 (态度/主动性/微笑服务)', titleEn: '4. Service Satisfaction (Attitude/Proactivity/Smile)', 
     required: true 
   },
   { 
-    id: 'b1_sub', section: 'B', type: QuestionType.MULTIPLE_CHOICE, 
-    titleZh: '主要原因是？', titleEn: 'Main reasons?',
-    optionsZh: ['服务态度', '上菜速度', '缺乏主动服务', '沟通不顺畅', '其他（请说明）'],
-    optionsEn: ['Attitude', 'Speed', 'Not proactive', 'Communication', 'Other'],
-    visibleIf: { triggerQuestionId: 'b1', operator: '<=', value: 7 }
+    id: 'b_sub', section: 'B', type: QuestionType.MULTIPLE_CHOICE, 
+    titleZh: 'B-1 主要原因？', titleEn: 'B-1 Main reasons?',
+    optionsZh: ['主动服务不足', '微笑服务缺失', '沟通不畅', '上菜流程协调差', '其他（请说明）'],
+    optionsEn: ['Not proactive', 'Lack of smile', 'Poor communication', 'Poor coordination', 'Other'],
+    visibleIf: { triggerQuestionId: 'b1', operator: '<=', value: 8 },
+    required: true
+  },
+  { 
+    id: 'c1', section: 'B', type: QuestionType.RATING, 
+    titleZh: '5. 餐厅环境满意度 (卫生状况/舒适度)', titleEn: '5. Environment Satisfaction (Cleanliness/Comfort)', 
+    required: true 
+  },
+  { 
+    id: 'c_sub', section: 'B', type: QuestionType.MULTIPLE_CHOICE, 
+    titleZh: 'B-2 希望改善哪方面？', titleEn: 'B-2 Areas for environment improvement?',
+    optionsZh: ['清洁卫生', '桌椅舒适度', '座位空间', '噪音', '灯光', '其他（请说明）'],
+    optionsEn: ['Cleanliness', 'Comfort', 'Space', 'Noise', 'Lighting', 'Other'],
+    visibleIf: { triggerQuestionId: 'c1', operator: '<=', value: 8 },
+    required: true
   },
 
-  // Section C: 用餐环境
+  // Section C: 整体用餐评价
   { 
-    id: 'c1', section: 'C', type: QuestionType.RATING, 
-    titleZh: '环境满意度（空间 / 空气 / 舒适度）', titleEn: 'Environment (Space/Air/Comfort)', 
+    id: 'd1', section: 'C', type: QuestionType.RATING, 
+    titleZh: '6. 本次整体体验打分', titleEn: '6. Overall Dining Experience Score', 
     required: true 
   },
   { 
-    id: 'c1_sub', section: 'C', type: QuestionType.MULTIPLE_CHOICE, 
-    titleZh: '您希望改善哪方面？', titleEn: 'Areas for improvement?',
-    optionsZh: ['空气流通', '烟味较大', '座位空间不足', '桌椅舒适度', '噪音', '灯光', '清洁度', '其他（请说明）'],
-    optionsEn: ['Ventilation', 'Smoke', 'Space', 'Comfort', 'Noise', 'Lighting', 'Cleanliness', 'Other'],
-    visibleIf: { triggerQuestionId: 'c1', operator: '<=', value: 7 }
-  },
-
-  // Section D: 整体评价
-  { 
-    id: 'd1', section: 'D', type: QuestionType.RATING, 
-    titleZh: '本次整体用餐体验您给多少分？', titleEn: 'Overall Dining Experience Score', 
-    required: true 
-  },
-  { 
-    id: 'd1_sub', section: 'D', type: QuestionType.MULTIPLE_CHOICE, 
-    titleZh: '什么最能提升您的整体体验？', titleEn: 'What would improve your experience most?',
-    optionsZh: ['增加蔬菜品类', '增加肉类选择', '增加海鲜品种', '增加汤底选择', '优化分量 / 定价', '改善服务态度', '提升出餐效率', '改善空气 / 通风', '其他（请说明）'],
-    optionsEn: ['More Veg', 'More Meat', 'More Seafood', 'More Soup Bases', 'Portion/Price', 'Service', 'Speed', 'Ventilation', 'Other'],
-    // Logic: Show if D1 <= 8
+    id: 'd_sub', section: 'C', type: QuestionType.MULTIPLE_CHOICE, 
+    titleZh: 'C-1 何种改善最能提升整体体验？', titleEn: 'C-1 What would improve experience most?',
+    optionsZh: ['增添菜品种类 (蔬菜/肉类/海鲜)', '优化汤底选择', '提升出餐效率', '优化份量或定价', '改善服务态度或主动性', '优化卫生与舒适度', '其他（请说明）'],
+    optionsEn: ['More variety', 'Better soup bases', 'Improve speed', 'Price/Portion optimization', 'Better service', 'Better hygiene/comfort', 'Other'],
     visibleIf: { triggerQuestionId: 'd1', operator: '<=', value: 8 },
-    required: false
+    required: true
   },
 
-  // Section E: 尾声
+  // Section D: 开放反馈
   { 
-    id: 'e1', section: 'E', type: QuestionType.TEXT, 
-    titleZh: '1、本次用餐您最喜欢的菜品是：', titleEn: '1. Your favorite dish today:', 
+    id: 'e1', section: 'D', type: QuestionType.TEXT, 
+    titleZh: '7. 本次用餐您最喜欢的菜品是？', titleEn: '7. Your favorite dish today?', 
     required: false 
   },
   { 
-    id: 'e2', section: 'E', type: QuestionType.TEXT, 
-    titleZh: '2、若您还有想跟我们说的，我们都很愿意听。', titleEn: '2. Any other feedback?', 
+    id: 'e2', section: 'D', type: QuestionType.TEXT, 
+    titleZh: '8. 有什么想对我们说的？(期待您的建议)', titleEn: '8. Any other suggestions?', 
     required: false 
   },
 ];
 
 const DEFAULT_SETTINGS: AppSettings = {
   restaurantName: '无界餐饮',
-  adminPassword: '568568', // Updated default password
+  adminPassword: '568568',
   logoUrl: 'https://cdn-icons-png.flaticon.com/512/1046/1046771.png',
   backgroundUrl: 'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?q=80&w=1000&auto=format&fit=crop',
 };
@@ -143,32 +149,20 @@ export const StorageService = {
     
     if (responses.length === 0) return null;
 
-    // Headers
-    const headers = ['ID', 'Date', 'Time', 'Language', ...questions.map(q => q.titleZh), 'Extra Comments'];
+    const headers = ['ID', 'Date', 'Time', 'Language', ...questions.map(q => q.titleZh), 'Other Field Answers'];
     
-    // Rows
     const rows = responses.map(r => {
         const date = new Date(r.timestamp);
-        
-        // Extract basic answers
         const questionAnswers = questions.map(q => {
             let ans = r.answers[q.id];
-            
-            // If it's multiple choice, check if there is an "Other" text associated
             const otherText = r.answers[`${q.id}_other`];
-            
             if (Array.isArray(ans)) {
                 let str = ans.join('; ');
-                if (otherText) {
-                    str += ` (Other: ${otherText})`;
-                }
+                if (otherText) str += ` (Other: ${otherText})`;
                 return str;
             }
             return ans ?? '';
         });
-
-        // Collect any orphaned "other" comments not mapped above? 
-        // For simplicity, we just appended them to the cell above.
 
         const rowData = [
             r.id,
@@ -176,7 +170,7 @@ export const StorageService = {
             date.toLocaleTimeString(),
             r.language,
             ...questionAnswers,
-            '' // Spacer or extra
+            ''
         ];
         return rowData.map(cell => `"${String(cell).replace(/"/g, '""')}"`).join(',');
     });

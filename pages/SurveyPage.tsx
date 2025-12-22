@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useMemo } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { StorageService } from '../services/storage';
@@ -21,7 +22,6 @@ const SurveyPage: React.FC = () => {
     setQuestions(loadedQuestions);
     setSettings(StorageService.getSettings());
 
-    // Initialize default values for Ratings (9)
     const initialAnswers: Record<string, any> = {};
     loadedQuestions.forEach(q => {
         if (q.type === QuestionType.RATING) {
@@ -35,7 +35,6 @@ const SurveyPage: React.FC = () => {
     setAnswers(prev => ({ ...prev, [questionId]: value }));
   };
 
-  // Helper to handle the "Other" text input
   const handleOtherText = (questionId: string, text: string) => {
       setAnswers(prev => ({ ...prev, [`${questionId}_other`]: text }));
   };
@@ -54,7 +53,7 @@ const SurveyPage: React.FC = () => {
     switch (logic.operator) {
       case '<=': return Number(triggerValue) <= Number(logic.value);
       case '>=': return Number(triggerValue) >= Number(logic.value);
-      case '==': return triggerValue == logic.value; // eslint-disable-line eqeqeq
+      case '==': return triggerValue == logic.value; 
       default: return false;
     }
   };
@@ -78,7 +77,6 @@ const SurveyPage: React.FC = () => {
       currentSectionQuestions.forEach(q => {
           if (isVisible(q) && q.required) {
               const val = answers[q.id];
-              // Check if empty
               if (val === undefined || val === null || val === '') {
                   missingQuestions.push(lang === 'zh' ? q.titleZh : q.titleEn);
               } 
@@ -134,11 +132,21 @@ const SurveyPage: React.FC = () => {
     return ((currentSectionIndex + 1) / sections.length) * 100;
   }, [currentSectionIndex, sections.length]);
 
+  const getSectionTitle = (id: string) => {
+      switch(id) {
+          case 'A': return lang === 'zh' ? '第一部分：出品评价' : 'Part 1: Kitchen Feedback';
+          case 'B': return lang === 'zh' ? '第二部分：服务与环境' : 'Part 2: Service & Env';
+          case 'C': return lang === 'zh' ? '第三部分：整体用餐评价' : 'Part 3: Overall Dining';
+          case 'D': return lang === 'zh' ? '第四部分：开放反馈' : 'Part 4: Open Feedback';
+          default: return '';
+      }
+  };
+
   if (!questions.length || !settings) return <div className="p-10 text-center">Loading...</div>;
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col font-sans">
-      {/* Header - Optimized for mobile visibility */}
+      {/* Header */}
       <div className="sticky top-0 bg-white/95 backdrop-blur-md z-30 shadow-sm border-b border-gray-100 transition-all">
          <div className="max-w-2xl mx-auto px-4 py-3">
             <div className="flex items-center justify-between mb-2">
@@ -149,14 +157,12 @@ const SurveyPage: React.FC = () => {
                     <ChevronLeft size={28} />
                 </button>
                 <div className="flex flex-col items-center">
-                    {/* Enlarged Title */}
-                    <div className="text-xl font-extrabold text-indigo-700 tracking-wide">
+                    <div className="text-2xl font-extrabold text-indigo-700 tracking-wide">
                         {lang === 'zh' ? '满意度调查' : 'Satisfaction Survey'}
                     </div>
                 </div>
                 <div className="w-7"></div>
             </div>
-            {/* Progress Bar */}
             <div className="h-1.5 w-full bg-gray-100 rounded-full overflow-hidden">
                 <div 
                     className="h-full bg-indigo-600 transition-all duration-500 ease-out"
@@ -166,24 +172,20 @@ const SurveyPage: React.FC = () => {
          </div>
       </div>
 
-      {/* Main Content Area - Reduced Padding for Mobile */}
       <div className="flex-1 flex flex-col max-w-md mx-auto w-full p-4 pb-28 relative">
-         
          <div className={`flex-1 flex flex-col space-y-4 ${animating ? 'animate-fade-in-up' : ''}`}>
              
-             {/* Section Header */}
              <div className="flex items-center justify-between px-1">
-                 <span className="inline-flex items-center px-3 py-1 bg-indigo-50 text-indigo-700 rounded-full text-xs font-bold tracking-wide border border-indigo-100 shadow-sm">
-                     {lang === 'zh' ? '第' : 'Part'} {currentSection} {lang === 'zh' ? '部分' : ''}
+                 <span className="inline-flex items-center px-4 py-1.5 bg-indigo-50 text-indigo-700 rounded-full text-sm font-bold tracking-wide border border-indigo-100 shadow-sm">
+                     {getSectionTitle(currentSection)}
                  </span>
-                 {currentSection === 'E' && (
-                     <span className="text-xs font-medium text-amber-600 animate-pulse bg-amber-50 px-2 py-0.5 rounded-md">
+                 {currentSection === 'D' && (
+                     <span className="text-xs font-bold text-amber-600 animate-pulse bg-amber-50 px-2 py-0.5 rounded-md border border-amber-100">
                          {lang === 'zh' ? '已经到尾声啦！' : 'Almost done!'}
                      </span>
                  )}
              </div>
 
-             {/* Render Questions */}
              {currentSectionQuestions.map((q) => {
                  if (!isVisible(q)) return null;
                  
@@ -192,19 +194,15 @@ const SurveyPage: React.FC = () => {
 
                  return (
                      <div key={q.id} className="bg-white p-4 rounded-xl shadow-sm border border-gray-100 animate-fade-in">
-                         {/* Question Title - More Compact */}
                          <h2 className="text-lg font-bold text-gray-800 mb-3 leading-tight">
                              {title}
-                             {!q.required && <span className="text-gray-400 text-xs font-normal ml-1">({lang === 'zh' ? '选填' : 'Optional'})</span>}
+                             {!q.required && <span className="text-gray-400 text-[10px] font-normal ml-1">({lang === 'zh' ? '选填' : 'Optional'})</span>}
                          </h2>
 
-                         {/* Input Area */}
                          <div>
-                             {/* RATING */}
                              {q.type === QuestionType.RATING && (
                                  <div className="py-1">
-                                     {/* Score Display - Compact */}
-                                     <div className="flex items-end justify-center mb-4">
+                                     <div className="flex items-end justify-center mb-3">
                                          <span className="text-4xl font-black text-indigo-600 leading-none">
                                              {answers[q.id] ?? 9}
                                          </span>
@@ -221,24 +219,21 @@ const SurveyPage: React.FC = () => {
                                             onChange={(e) => handleAnswer(q.id, parseInt(e.target.value))}
                                             className="w-full absolute z-20 opacity-0 h-full cursor-pointer"
                                         />
-                                        {/* Custom Track */}
                                         <div className="w-full h-2.5 bg-gray-100 rounded-full overflow-hidden relative z-10 box-border border border-gray-200">
                                             <div 
                                                 className={`h-full transition-all duration-150 ${
-                                                    (answers[q.id] ?? 9) <= 7 ? 'bg-amber-400' : 'bg-indigo-500'
+                                                    (answers[q.id] ?? 9) <= 8 ? 'bg-amber-400' : 'bg-indigo-500'
                                                 }`}
                                                 style={{ width: `${(answers[q.id] ?? 9) * 10}%` }}
                                             />
                                         </div>
-                                        {/* Custom Thumb Visual */}
                                         <div 
                                             className={`absolute h-6 w-6 bg-white border-4 rounded-full shadow-md z-10 pointer-events-none transition-all duration-150 transform -translate-x-1/2 ${
-                                                (answers[q.id] ?? 9) <= 7 ? 'border-amber-400' : 'border-indigo-600'
+                                                (answers[q.id] ?? 9) <= 8 ? 'border-amber-400' : 'border-indigo-600'
                                             }`}
                                             style={{ left: `${(answers[q.id] ?? 9) * 10}%` }}
                                         />
                                      </div>
-
                                      <div className="flex justify-between mt-1 text-[10px] font-medium text-gray-400 px-0.5">
                                          <span>0</span>
                                          <span>10</span>
@@ -246,7 +241,6 @@ const SurveyPage: React.FC = () => {
                                  </div>
                              )}
 
-                             {/* MULTIPLE CHOICE */}
                              {q.type === QuestionType.MULTIPLE_CHOICE && options && (
                                  <div className="grid grid-cols-2 gap-2">
                                      {options.map((opt) => {
@@ -263,7 +257,7 @@ const SurveyPage: React.FC = () => {
                                                             : [...currentSelected, opt];
                                                         handleAnswer(q.id, newSelection);
                                                     }}
-                                                    className={`p-2.5 rounded-lg border text-left transition-all duration-200 flex items-center justify-between group ${
+                                                    className={`p-2 rounded-lg border text-left transition-all duration-200 flex items-center justify-between group ${
                                                         isOther ? 'col-span-2' : 'col-span-1'
                                                     } ${
                                                         isSelected 
@@ -271,19 +265,18 @@ const SurveyPage: React.FC = () => {
                                                         : 'border-gray-200 bg-white hover:bg-gray-50 text-gray-700 hover:border-gray-300'
                                                     }`}
                                                 >
-                                                    <span className="text-sm font-medium">{opt}</span>
-                                                    {isSelected && <div className="bg-indigo-600 text-white rounded-full p-0.5"><Check size={12} strokeWidth={3}/></div>}
+                                                    <span className="text-xs font-medium">{opt}</span>
+                                                    {isSelected && <div className="bg-indigo-600 text-white rounded-full p-0.5"><Check size={10} strokeWidth={3}/></div>}
                                                 </button>
                                                 
-                                                {/* Text input for "Other" when selected */}
                                                 {isOther && isSelected && (
-                                                    <div className="col-span-2 mt-0 animate-fade-in">
+                                                    <div className="col-span-2 mt-1 animate-fade-in">
                                                         <input
                                                             type="text"
                                                             value={answers[`${q.id}_other`] || ''}
                                                             onChange={(e) => handleOtherText(q.id, e.target.value)}
                                                             placeholder={lang === 'zh' ? '请具体说明...' : 'Please specify...'}
-                                                            className="w-full p-2.5 text-sm border-b-2 border-indigo-200 bg-indigo-50/30 focus:border-indigo-600 outline-none rounded-none transition-colors"
+                                                            className="w-full p-2 text-xs border-b-2 border-indigo-200 bg-indigo-50/30 focus:border-indigo-600 outline-none rounded-none transition-colors"
                                                             autoFocus
                                                         />
                                                     </div>
@@ -294,13 +287,12 @@ const SurveyPage: React.FC = () => {
                                  </div>
                              )}
 
-                             {/* TEXT */}
                              {q.type === QuestionType.TEXT && (
                                  <textarea
                                     value={answers[q.id] ?? ''}
                                     onChange={(e) => handleAnswer(q.id, e.target.value)}
-                                    placeholder={lang === 'zh' ? '请输入...' : 'Please type here...'}
-                                    className="w-full h-24 p-3 rounded-xl border-2 border-gray-200 focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10 outline-none text-sm resize-none transition-all bg-white"
+                                    placeholder={lang === 'zh' ? '请输入内容...' : 'Please type here...'}
+                                    className="w-full h-24 p-3 rounded-xl border-2 border-gray-200 focus:border-indigo-500 outline-none text-sm resize-none transition-all bg-white"
                                  />
                              )}
                          </div>
@@ -310,7 +302,6 @@ const SurveyPage: React.FC = () => {
          </div>
       </div>
 
-      {/* Footer Navigation */}
       <div className="fixed bottom-0 left-0 right-0 p-4 bg-white/95 backdrop-blur border-t border-gray-100 z-30 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)]">
         <div className="max-w-md mx-auto">
             <button
