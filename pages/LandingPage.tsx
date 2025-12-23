@@ -1,8 +1,9 @@
+
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { StorageService } from '../services/storage';
 import { AppSettings } from '../types';
-import { Utensils, Globe } from 'lucide-react';
+import { Utensils } from 'lucide-react';
 
 const LandingPage: React.FC = () => {
   const navigate = useNavigate();
@@ -26,18 +27,18 @@ const LandingPage: React.FC = () => {
       <div className="absolute inset-0 bg-black/60 backdrop-blur-sm"></div>
       
       <div className="relative z-10 w-full max-w-md bg-white/95 rounded-2xl shadow-2xl overflow-hidden p-8 text-center animate-fade-in-up">
-        <div className="mx-auto w-20 h-20 bg-indigo-100 rounded-full flex items-center justify-center mb-6 shadow-inner">
-           {/* Fallback to icon if logo fails to load or is placeholder */}
+        {/* Adjusted Logo Container to 400x200px proportion (max-width constrained) */}
+        <div className="mx-auto w-full aspect-[2/1] max-w-[320px] bg-gray-50 border border-gray-100 rounded-xl flex items-center justify-center mb-6 shadow-inner overflow-hidden">
            <img 
             src={settings.logoUrl} 
             alt="Logo" 
-            className="w-16 h-16 rounded-full object-cover"
+            className="w-full h-full object-contain"
             onError={(e) => {
                 e.currentTarget.style.display = 'none';
-                e.currentTarget.parentElement?.classList.add('flex');
+                e.currentTarget.parentElement?.querySelector('.fallback-icon')?.classList.remove('hidden');
             }}
            />
-           <Utensils className="w-10 h-10 text-indigo-600 hidden" />
+           <Utensils className="w-12 h-12 text-indigo-600 hidden fallback-icon" />
         </div>
 
         <h1 className="text-2xl font-bold text-gray-900 mb-2">{settings.restaurantName}</h1>

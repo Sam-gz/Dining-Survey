@@ -81,7 +81,7 @@ const DEFAULT_QUESTIONS: Question[] = [
     required: true
   },
 
-  // Section D: 来店渠道来源 (New Part 4)
+  // Section D: 来店渠道来源 (NEW Part 4)
   {
     id: 'channel_source', section: 'D', type: QuestionType.SINGLE_CHOICE,
     titleZh: '请问您是通过什么方式了解到我们门店的？', 
@@ -107,8 +107,8 @@ const DEFAULT_QUESTIONS: Question[] = [
 const DEFAULT_SETTINGS: AppSettings = {
   restaurantName: '无界餐饮',
   adminPassword: '568568',
-  logoUrl: 'https://cdn-icons-png.flaticon.com/512/1046/1046771.png', // Placeholder to be replaced by user upload
-  backgroundUrl: 'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?q=80&w=1000&auto=format&fit=crop',
+  logoUrl: 'https://images.unsplash.com/photo-1594913785162-e6785633bc88?auto=format&fit=crop&q=80&w=400&h=200', // Placeholder
+  backgroundUrl: 'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?q=80&w=1920&h=1080&auto=format&fit=crop',
 };
 
 export const StorageService = {
