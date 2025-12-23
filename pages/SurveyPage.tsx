@@ -41,7 +41,7 @@ const SurveyPage: React.FC = () => {
 
   const sections = useMemo(() => {
       const s = new Set(questions.map(q => q.section));
-      return Array.from(s);
+      return Array.from(s).sort();
   }, [questions]);
 
   const currentSection = sections[currentSectionIndex];
@@ -137,7 +137,8 @@ const SurveyPage: React.FC = () => {
           case 'A': return lang === 'zh' ? '第一部分：出品评价' : 'Part 1: Kitchen Feedback';
           case 'B': return lang === 'zh' ? '第二部分：服务与环境' : 'Part 2: Service & Env';
           case 'C': return lang === 'zh' ? '第三部分：整体用餐评价' : 'Part 3: Overall Dining';
-          case 'D': return lang === 'zh' ? '第四部分：开放反馈' : 'Part 4: Open Feedback';
+          case 'D': return lang === 'zh' ? '第四部分：来店渠道来源' : 'Part 4: Visit Source';
+          case 'E': return lang === 'zh' ? '第五部分：开放反馈' : 'Part 5: Open Feedback';
           default: return '';
       }
   };
@@ -146,7 +147,6 @@ const SurveyPage: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col font-sans">
-      {/* Header */}
       <div className="sticky top-0 bg-white/95 backdrop-blur-md z-30 shadow-sm border-b border-gray-100 transition-all">
          <div className="max-w-2xl mx-auto px-4 py-3">
             <div className="flex items-center justify-between mb-2">
@@ -179,9 +179,9 @@ const SurveyPage: React.FC = () => {
                  <span className="inline-flex items-center px-4 py-1.5 bg-indigo-50 text-indigo-700 rounded-full text-sm font-bold tracking-wide border border-indigo-100 shadow-sm">
                      {getSectionTitle(currentSection)}
                  </span>
-                 {currentSection === 'D' && (
+                 {currentSection === 'E' && (
                      <span className="text-xs font-bold text-amber-600 animate-pulse bg-amber-50 px-2 py-0.5 rounded-md border border-amber-100">
-                         {lang === 'zh' ? '已经到尾声啦！' : 'Almost done!'}
+                         {lang === 'zh' ? '最后一步啦！' : 'Almost done!'}
                      </span>
                  )}
              </div>
@@ -241,21 +241,25 @@ const SurveyPage: React.FC = () => {
                                  </div>
                              )}
 
-                             {q.type === QuestionType.MULTIPLE_CHOICE && options && (
+                             {(q.type === QuestionType.MULTIPLE_CHOICE || q.type === QuestionType.SINGLE_CHOICE) && options && (
                                  <div className="grid grid-cols-2 gap-2">
                                      {options.map((opt) => {
-                                         const currentSelected = answers[q.id] || [];
-                                         const isSelected = currentSelected.includes(opt);
+                                         const currentSelected = q.type === QuestionType.MULTIPLE_CHOICE ? (answers[q.id] || []) : answers[q.id];
+                                         const isSelected = q.type === QuestionType.MULTIPLE_CHOICE ? currentSelected.includes(opt) : currentSelected === opt;
                                          const isOther = opt.includes('其他') || opt.includes('Other');
                                          
                                          return (
                                             <React.Fragment key={opt}>
                                                 <button
                                                     onClick={() => {
-                                                        const newSelection = isSelected 
-                                                            ? currentSelected.filter((i: string) => i !== opt)
-                                                            : [...currentSelected, opt];
-                                                        handleAnswer(q.id, newSelection);
+                                                        if (q.type === QuestionType.MULTIPLE_CHOICE) {
+                                                            const newSelection = isSelected 
+                                                                ? currentSelected.filter((i: string) => i !== opt)
+                                                                : [...currentSelected, opt];
+                                                            handleAnswer(q.id, newSelection);
+                                                        } else {
+                                                            handleAnswer(q.id, opt);
+                                                        }
                                                     }}
                                                     className={`p-2 rounded-lg border text-left transition-all duration-200 flex items-center justify-between group ${
                                                         isOther ? 'col-span-2' : 'col-span-1'

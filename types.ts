@@ -1,8 +1,10 @@
+
 export type Language = 'zh' | 'en';
 
 export enum QuestionType {
   RATING = 'rating',
   MULTIPLE_CHOICE = 'multiple_choice',
+  SINGLE_CHOICE = 'single_choice',
   TEXT = 'text'
 }
 
@@ -21,8 +23,6 @@ export interface Question {
   optionsZh?: string[];
   optionsEn?: string[];
   // If undefined, always visible.
-  // If single object, must satisfy condition.
-  // If array, satisfying ANY condition makes it visible (OR logic).
   visibleIf?: QuestionLogic | QuestionLogic[]; 
   required?: boolean;
 }

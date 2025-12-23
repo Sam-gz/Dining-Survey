@@ -81,14 +81,24 @@ const DEFAULT_QUESTIONS: Question[] = [
     required: true
   },
 
-  // Section D: 开放反馈
+  // Section D: 来店渠道来源 (New Part 4)
+  {
+    id: 'channel_source', section: 'D', type: QuestionType.SINGLE_CHOICE,
+    titleZh: '请问您是通过什么方式了解到我们门店的？', 
+    titleEn: 'How did you hear about us?',
+    optionsZh: ['户外广告（如门头、海报、灯箱等）', '新媒体平台（如 小红书 / Facebook / Instagram / Tiktok等）', '朋友推荐 / 口碑介绍', '商场逛街时看到', '其他方式（请说明）'],
+    optionsEn: ['Outdoor Ads', 'Social Media', 'Referral/Word of mouth', 'Walk-in', 'Other'],
+    required: true
+  },
+
+  // Section E: 开放反馈 (Original Part 4 shifted to Part 5)
   { 
-    id: 'e1', section: 'D', type: QuestionType.TEXT, 
+    id: 'e1', section: 'E', type: QuestionType.TEXT, 
     titleZh: '7. 本次用餐您最喜欢的菜品是？', titleEn: '7. Your favorite dish today?', 
     required: false 
   },
   { 
-    id: 'e2', section: 'D', type: QuestionType.TEXT, 
+    id: 'e2', section: 'E', type: QuestionType.TEXT, 
     titleZh: '8. 有什么想对我们说的？(期待您的建议)', titleEn: '8. Any other suggestions?', 
     required: false 
   },
@@ -97,7 +107,7 @@ const DEFAULT_QUESTIONS: Question[] = [
 const DEFAULT_SETTINGS: AppSettings = {
   restaurantName: '无界餐饮',
   adminPassword: '568568',
-  logoUrl: 'https://cdn-icons-png.flaticon.com/512/1046/1046771.png',
+  logoUrl: 'https://cdn-icons-png.flaticon.com/512/1046/1046771.png', // Placeholder to be replaced by user upload
   backgroundUrl: 'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?q=80&w=1000&auto=format&fit=crop',
 };
 
@@ -161,6 +171,7 @@ export const StorageService = {
                 if (otherText) str += ` (Other: ${otherText})`;
                 return str;
             }
+            if (otherText) return `${ans} (Other: ${otherText})`;
             return ans ?? '';
         });
 
