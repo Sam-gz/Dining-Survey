@@ -1,8 +1,7 @@
+
 import { GoogleGenAI, Type } from "@google/genai";
 import { SurveyResponse, Question, QuestionType, TagCloudItem } from "../types";
 
-// Note: In a real production app, you shouldn't expose API keys in frontend code.
-// Since this is a demo running in a browser environment, we rely on the env var.
 const getAiClient = () => {
     const apiKey = process.env.API_KEY;
     if (!apiKey) throw new Error("API Key is missing");
@@ -18,7 +17,6 @@ export const analyzeFeedback = async (
     return { summary: "No data available.", sentiment: "neutral", tags: [] };
   }
 
-  // Filter text responses and low-score reasons
   const textFeedback: string[] = [];
   
   responses.forEach(r => {
@@ -26,32 +24,32 @@ export const analyzeFeedback = async (
           const q = questions.find(qu => qu.id === qId);
           if (q) {
               if (q.type === QuestionType.TEXT && typeof value === 'string' && value.trim().length > 0) {
-                  textFeedback.push(`Customer said: "${value}"`);
+                  textFeedback.push(`Score: ${r.answers['d1'] || 'N/A'}, Comment: "${value}"`);
               }
               if (q.type === QuestionType.MULTIPLE_CHOICE && Array.isArray(value) && value.length > 0) {
-                   textFeedback.push(`Customer complained about: ${value.join(', ')}`);
+                   textFeedback.push(`Dissatisfaction reason: ${value.join(', ')}`);
               }
           }
       });
   });
 
   const prompt = `
-    Analyze the following restaurant customer feedback and satisfaction survey data.
+    Analyze the following restaurant customer feedback.
+    Focus on extracting common reasons for dissatisfaction (especially for scores <= 8).
     
-    Feedback Items:
-    ${textFeedback.slice(0, 50).join('\n')} 
-    (Truncated to last 50 for brevity)
+    Feedback Data:
+    ${textFeedback.slice(-100).join('\n')} 
 
-    Please provide:
-    1. A short executive summary (max 2 sentences) of the main issues.
-    2. The overall sentiment.
-    3. A list of key "negative/improvement" keywords/tags with a frequency score (1-10) for a word cloud.
+    Return a JSON object with:
+    1. summary: A 2-sentence executive summary.
+    2. sentiment: Overall sentiment (positive/neutral/negative).
+    3. tags: Top 10 negative/improvement keywords with frequency score (1-100).
   `;
 
   try {
     const ai = getAiClient();
     const response = await ai.models.generateContent({
-        model: 'gemini-2.5-flash',
+        model: 'gemini-3-flash-preview',
         contents: prompt,
         config: {
             responseMimeType: "application/json",
@@ -70,7 +68,8 @@ export const analyzeFeedback = async (
                             }
                         }
                     }
-                }
+                },
+                required: ['summary', 'sentiment', 'tags']
             }
         }
     });

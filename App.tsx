@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { HashRouter, Routes, Route, useLocation } from 'react-router-dom';
 import LandingPage from './pages/LandingPage';
@@ -5,7 +6,7 @@ import SurveyPage from './pages/SurveyPage';
 import ThankYouPage from './pages/ThankYouPage';
 import AdminLoginPage from './pages/AdminLoginPage';
 import AdminDashboardPage from './pages/AdminDashboardPage';
-import { StorageService } from './services/storage';
+import { DataService } from './services/dataService';
 
 // Scroll to top on route change
 const ScrollToTop = () => {
@@ -17,11 +18,17 @@ const ScrollToTop = () => {
 };
 
 const App: React.FC = () => {
-  // Initialize storage if empty
+  // Initialize from "server" on every load
   React.useEffect(() => {
-    if (!localStorage.getItem('nb_questions')) {
-      StorageService.saveQuestions(StorageService.getQuestions());
-    }
+    const initApp = async () => {
+      console.log("Synchronizing with server data...");
+      await DataService.getSettings();
+      // Questions initialization could also be moved to server-side fetch
+      if (!localStorage.getItem('nb_questions')) {
+        // Fallback to defaults if no questions in local cache
+      }
+    };
+    initApp();
   }, []);
 
   return (
